@@ -34,7 +34,7 @@ lua与unity生命周期函数的交互：写了一个LuaBehaviour.cs脚本继承monoBehaviour，一个
 
 运行指引：  
 下载项目后，还需要下载Slua：https://github.com/pangweiwei/slua  
-导入完成后，打开Asset/Scenes/init场景。
+导入完成后，打开Asset/Scenes/init场景。  
 不将资源上传到服务器，本地开发调试模式：启用宏：DEVELOP_MODE，然后使用工具打包:Tool/a. ->Tool/b. 即可运行游戏。（如果报错，那么运行Tool/e.清空缓存）  
 将资源上传到服务器的模式：不启用宏，依次运行工具：Tool/a.b.c.d，然后将UpdatePackage文件夹下所有文件拖拽到服务器上(服务器地址修改位置在Assets/Scripts/FrameWork/UpdateVersion.cs/13行)，即可运行游戏。  
 
