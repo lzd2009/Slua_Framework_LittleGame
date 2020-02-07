@@ -1,0 +1,47 @@
+﻿local StateMachine = {}
+
+function StateMachine:new()
+    local o =  {};
+    o.map = {};
+    self.__index = self;
+    setmetatable(o,self);
+    return o;
+end
+
+function StateMachine:addToMap(stateID,state)
+    self.map[stateID] = state;
+end
+
+function StateMachine:setDefaultState(currentStateID,globalStateID)
+    self.currentState = self.map[currentStateID];
+    self.currentState:onEnter();
+    self.globalState = self.map[globalStateID];
+    self.globalState:onEnter();
+end
+
+function StateMachine:start(fsmOwner)
+    self.fsmOwner = fsmOwner;
+    for k,v in pairs(self.map)do
+        v.start(v,k,self,fsmOwner);
+    end
+end
+
+function StateMachine:transimision(stateID,arg)
+    local nextState = self.map[stateID];
+    self.lastState = self.currentState;
+    self.lastState:onExit();
+    self.currentState = nextState;
+    self.currentState:onEnter(arg);
+end
+
+function StateMachine.update(self)
+    self.globalState:update();
+    self.currentState:update();
+end
+
+function StateMachine.fixedUpdate(self)
+    self.globalState:fixedUpdate();
+    self.currentState:fixedUpdate();
+end
+
+return StateMachine;

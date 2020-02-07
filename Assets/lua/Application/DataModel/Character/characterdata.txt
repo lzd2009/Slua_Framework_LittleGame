@@ -1,0 +1,73 @@
+﻿local CharacterInfo = AssetManager.Require('characterinfo.txt');
+
+local CharacterData = {}
+function CharacterData:new(characterID)
+    local o = {};
+    self.__index = self;
+    setmetatable(o,self);
+    o.enemyID = characterID;
+    o.maxHp = CharacterInfo[characterID].hp;
+    o.currentHp = o.maxHp;
+    o.attack = CharacterInfo[characterID].attack;
+    o.speed = CharacterInfo[characterID].speed;
+    o.switchRoadSpeed = CharacterInfo[characterID].switchRoadSpeed;
+    o.skillDamage_1 = CharacterInfo[characterID].skillDamage_1;
+    o.skillDamage_2 = CharacterInfo[characterID].skillDamage_2;
+    o.cd_1 = CharacterInfo[characterID].cd_1;
+    o.cd_2 = CharacterInfo[characterID].cd_2;
+    o.timer_skill1 = o.cd_1; --当前还剩多少秒能使用技能
+    o.timer_skill2 = o.cd_2;
+    o.skill1_ready = false;
+    o.skill2_ready = false;
+    return o;
+end
+
+
+function CharacterData:setCurrentHp(newHp)
+    self.currentHp = newHp;
+    MessageCenter.SendEvent('characterHpChange',newHp);
+    if(self.currentHp <=0)then
+        MessageCenter.SendEvent('characterDie',self);
+    end
+end
+
+function CharacterData:setAttack(newAttack)
+    self.attack = newAttack;
+end
+
+function CharacterData:set_timer_skill1(newRemainTime)
+    if( (self.timer_skill1 ==0) and (newRemainTime ~=0))then
+        self:set_skill1_ready(false);
+    end
+    self.timer_skill1 = newRemainTime;
+    MessageCenter.SendEvent('skill_cd',{1,newRemainTime});
+    if(self.timer_skill1 == 0)then
+        self:set_skill1_ready(true);
+    end
+end
+
+function CharacterData:set_skill1_ready(isReady)
+    self.skill1_ready = isReady;
+end
+
+function CharacterData:set_timer_skill2(newRemainTime)
+    if( (self.timer_skill2 ==0) and (newRemainTime ~=0))then
+        self:set_skill2_ready(false);
+    end
+    self.timer_skill2 = newRemainTime;
+    MessageCenter.SendEvent('skill_cd',{2,newRemainTime});
+    if(self.timer_skill2 == 0)then
+        self:set_skill2_ready(true);
+    end
+end
+
+function CharacterData:set_skill2_ready(isReady)
+    self.skill2_ready = isReady;
+end
+
+
+
+
+
+
+return CharacterData;

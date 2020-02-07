@@ -1,0 +1,70 @@
+﻿
+local Scenes = {}
+
+function Scenes.loadingHandler(progress)
+
+end
+
+function Scenes.loadedHandler(sceneName)
+    --加载到下一个场景了，第一步是清理上个场景的ui。
+    UIManager.ClearAllPanel();
+    if(sceneName == 'main')then
+        --显示mainPanel
+        local MainPanel = AssetManager.Require('mainpanel.txt')
+        local mainPanel = MainPanel:new();
+        local mainPanelGo = UIManager.ShowPanel('main_ui.ab','MainPanel');
+        mainPanelGo:AddComponent(LuaBehaviour):BindLuaTable(mainPanel);
+    elseif (sceneName == 'level_1') then
+        Scenes.loadGaming_Common();
+    end
+
+end
+
+--生成战斗场景的共有的资源
+function Scenes.loadGaming_Common()
+    --生成角色数据和角色
+    local characterAsset = AssetManager.LoadAsset('character.ab','character');
+    local characterGo = GameObject.Instantiate(characterAsset);
+    local Character = AssetManager.Require('character.txt')
+    local CharacterData = AssetManager.Require('characterdata.txt');
+    local characterData = CharacterData:new(1);
+    local character = Character:new(characterData);
+    characterGo:AddComponent(LuaBehaviour):BindLuaTable(character);
+    --显示GamingPanel
+    local gamingPanelGo = UIManager.ShowPanel('gaming_ui.ab','GamingPanel');
+    local GamingPanel = AssetManager.Require('gamingpanel.txt')
+    local gamingPanel = GamingPanel:new(character);
+    gamingPanelGo:AddComponent(LuaBehaviour):BindLuaTable(gamingPanel);
+    --生成相机
+    local cameraHandlerAsset = AssetManager.LoadAsset('gaming_common.ab','cameraHandler');
+    local cameraHandlerGo = GameObject.Instantiate(cameraHandlerAsset);
+    local CameraHandler = AssetManager.Require('camerahandler.txt')
+    local cameraHandler = CameraHandler:new();
+    cameraHandlerGo:AddComponent(LuaBehaviour):BindLuaTable(cameraHandler);
+    --生成跑道上对应位置对应的敌人、道具
+    local createPoint = GameObject.Find('roadManager').transform:Find('createPoint').transform;
+    local createPoints = createPoint:GetComponentsInChildren(Transform);
+    local enemyAsset = AssetManager.LoadAsset('enemy.ab','enemy');
+    local hpAsset = AssetManager.LoadAsset('gaming_common.ab','hp');
+    local attackAsset = AssetManager.LoadAsset('gaming_common.ab','attack');
+    for i = 1,#createPoints do
+        local go = nil;
+        if(createPoints[i].transform.name == 'enemy')then
+            go = GameObject.Instantiate(enemyAsset);
+            local Enemy = AssetManager.Require('enemy.txt');
+            local EnemyData = AssetManager.Require('enemydata.txt');
+            local enemyData = EnemyData:new(1);
+            local enemy = Enemy:new(enemyData);
+            go:AddComponent(LuaBehaviour):BindLuaTable(enemy);
+        elseif(createPoints[i].transform.name == 'hp')then
+            go = GameObject.Instantiate(hpAsset);
+        elseif(createPoints[i].transform.name == 'attack')then
+            go = GameObject.Instantiate(attackAsset);
+        end
+        if(go ~= nil)then
+            go.transform.position = createPoints[i].position;
+        end
+    end
+end
+
+return Scenes;

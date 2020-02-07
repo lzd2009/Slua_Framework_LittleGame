@@ -1,0 +1,77 @@
+﻿
+local Enemy = {}
+
+function Enemy:new(enemyData)
+    local o = {};
+    o.attackRange = 4;
+    o.enemyData = enemyData;
+    self.__index = self;
+    setmetatable(o,self);
+    return o;
+end
+
+function Enemy.start(self)
+    self.this.useUpdate = true;
+    self.this.useFixedUpdate = true;
+    self.this.useOnTriggerEnter = true;
+    self.anim = self.gameObject:GetComponent(Animator);
+    self.player = GameObject.FindGameObjectWithTag('Player');
+    --交给状态机
+
+    self:setStateMachine();
+    self:SetWeaponCollider();
+
+end
+
+function Enemy:setStateMachine()
+    local StateMachine = AssetManager.Require('statemachine.txt');
+    local stateMachine = StateMachine:new();
+    self.stateMachine = stateMachine;
+    local globalState = AssetManager.Require('enemy_globalstate.txt'):new();
+    local idleState = AssetManager.Require('enemy_idlestate.txt'):new();
+    local battleState = AssetManager.Require('enemy_battlestate.txt'):new();
+    local skillHittedState = AssetManager.Require('enemy_skillhittedstate.txt'):new();
+    local dieState = AssetManager.Require('enemy_diestate.txt'):new();
+
+    self.stateMachine:addToMap('global',globalState);
+    self.stateMachine:addToMap('idle',idleState);
+    self.stateMachine:addToMap('battle',battleState);
+    self.stateMachine:addToMap('skillHitted',skillHittedState);
+    self.stateMachine:addToMap('die',dieState);
+
+    stateMachine:start(self);
+    self.stateMachine:setDefaultState('idle','global');
+end
+
+function Enemy.fixedUpdate(self)
+
+    self.stateMachine:fixedUpdate();
+end
+function Enemy.update(self)
+    self.stateMachine:update();
+end
+
+--设置武器trigger生效动画时间
+function Enemy:SetWeaponCollider()
+    self.weaponCollider =  self.transform:Find('Bip001'):Find('Bip001 Prop1'):GetComponent(Collider);
+    self.weaponCollider.enabled = false;
+    local el = EventListener.Get(self.gameObject);
+    el.onAnimEvent = function(animEventName)
+        if(animEventName == 'attack_start')then
+            self.weaponCollider.enabled = true;
+        elseif(animEventName == 'attack_end')then
+            self.weaponCollider.enabled = false;
+        end
+    end
+end
+
+--当武器碰撞玩家
+function Enemy.onTriggerEnter(self,arg)
+    local collider = arg;
+    if(collider.tag == 'Player')then
+        MessageCenter.SendEvent('enemyHitPlayer',self.enemyData.attack);
+    end
+end
+
+
+return Enemy;

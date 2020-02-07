@@ -1,0 +1,25 @@
+﻿local BaseState = AssetManager.Require('basestate.txt');
+local Enemy_DieState = BaseState:new();
+function Enemy_DieState:new()
+    local o = BaseState:new();
+    self.__index = self;
+    setmetatable(o,self);
+    return o;
+end
+
+function Enemy_DieState:onEnter(arg)
+    self.fsmOwner.anim:SetTrigger('die');
+    self.fsmOwner.weaponCollider.enabled = false;
+end
+
+function Enemy_DieState:update()
+    local currentPlayAnimName = self.fsmOwner.anim:GetCurrentAnimatorClipInfo(0)[1].clip.name;
+    local normalizedTime =self.fsmOwner.anim:GetCurrentAnimatorStateInfo(0).normalizedTime;
+    if((currentPlayAnimName == "die") and (normalizedTime >=0.95 ))then
+        --该消亡了。
+        MessageCenter.SendEvent('enemyDestroy',self.fsmOwner);
+        GameObject.Destroy(self.fsmOwner.gameObject);
+    end
+end
+
+return Enemy_DieState;

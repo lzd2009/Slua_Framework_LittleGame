@@ -1,0 +1,27 @@
+﻿local BaseState = AssetManager.Require('basestate.txt');
+local Enemy_IdleState = BaseState:new();
+function Enemy_IdleState:new()
+    local o =BaseState:new();
+    self.__index = self;
+    setmetatable(o,self);
+    return o;
+end
+
+
+function Enemy_IdleState:onEnter(arg)
+    --播idle。不做任何事
+end
+
+function Enemy_IdleState:update()
+
+    --在前方发射只检测Character Layer的射线，如果碰撞到，切换为battle模式
+    local layerMask = LayerMask.NameToLayer('Character');
+    layerMask = math.pow(2,layerMask);
+    local hitted,rayCastInfo = Physics.Raycast(self.fsmOwner.transform.position,self.fsmOwner.transform.forward,Slua.out,self.fsmOwner.attackRange,layerMask);
+    if(hitted == true)then
+        self.stateMachine:transimision('battle');
+    end
+
+end
+
+return Enemy_IdleState;

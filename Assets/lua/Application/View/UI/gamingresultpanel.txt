@@ -1,0 +1,22 @@
+﻿local GamingResultPanel = {}
+
+function GamingResultPanel:new()
+    local o = {};
+    self.__index = self;
+    setmetatable(o,self);
+    return o;
+end
+
+function GamingResultPanel.start(self)
+    self.backBtn = self.transform:Find('backBtn'):GetComponent(UI.Button);
+    self.backBtn.onClick:AddListener(function()
+        self:onBackBtnClick();
+    end)
+end
+
+function GamingResultPanel:onBackBtnClick()
+    local Scenes = AssetManager.Require('scenes.txt');
+    ScenesManager.LoadAssetBundleScene('scenes.ab','main',Scenes.loadingHandler,Scenes.loadedHandler);
+end
+
+return GamingResultPanel;

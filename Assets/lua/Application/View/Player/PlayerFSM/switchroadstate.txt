@@ -1,0 +1,51 @@
+﻿local BaseState = AssetManager.Require('basestate.txt');
+local SwitchRoadState = BaseState:new();
+function SwitchRoadState:new()
+    local o =  BaseState:new();
+    setmetatable(o,self);
+    self.__index = self;
+    return o;
+end
+
+function SwitchRoadState:onEnter(dir)
+    self.currentTargetDir = dir;
+    if(dir == 'left')then
+        self.dirVector = self.fsmOwner.transform.forward + (-self.fsmOwner.transform.right) * 2;
+    elseif(dir == 'right')then
+        self.dirVector = self.fsmOwner.transform.forward + (self.fsmOwner.transform.right) * 2;
+    end
+end
+
+
+function SwitchRoadState:update()
+    if(self.fsmOwner.road == 'mid')then
+        if(self.currentTargetDir == 'left')then
+            if(self.fsmOwner.transform.position.x <= -2)then
+                --认为到达目标赛道
+                self.fsmOwner.transform.position = Vector3(-2,self.fsmOwner.transform.position.y,self.fsmOwner.transform.position.z);
+                self.fsmOwner.road = 'left';
+                self.stateMachine:transimision('run');
+            end
+        elseif(self.currentTargetDir == 'right')then
+            if(self.fsmOwner.transform.position.x >= 2)then
+                --认为到达目标赛道
+                self.fsmOwner.transform.position = Vector3(2,self.fsmOwner.transform.position.y,self.fsmOwner.transform.position.z);
+                self.fsmOwner.road = 'right';
+                self.stateMachine:transimision('run');
+            end
+        end
+    elseif((self.fsmOwner.road == 'left') or (self.fsmOwner.road == 'right'))then
+        if(math.abs(self.fsmOwner.transform.position.x) <= 0.05)then
+            self.fsmOwner.transform.position = Vector3(0,self.fsmOwner.transform.position.y,self.fsmOwner.transform.position.z);
+            self.fsmOwner.road = 'mid';
+            self.stateMachine:transimision('run');
+        end
+    end
+end
+
+function SwitchRoadState:fixedUpdate()
+    self.fsmOwner.transform.position = self.fsmOwner.transform.position + self.dirVector * Time.fixedDeltaTime * self.fsmOwner.characterData.switchRoadSpeed;
+end
+
+
+return SwitchRoadState;

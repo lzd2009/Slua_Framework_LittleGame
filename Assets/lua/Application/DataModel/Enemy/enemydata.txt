@@ -1,0 +1,27 @@
+﻿local EnemyInfo = AssetManager.Require('enemyinfo.txt');
+
+local EnemyData = {}
+function EnemyData:new(enemyID)
+    local o = {};
+    self.__index = self;
+    setmetatable(o,self);
+    o.enemyID = enemyID;
+    o.maxHp = EnemyInfo[enemyID].hp;
+    o.currentHp = o.maxHp;
+    o.attack = EnemyInfo[enemyID].attack;
+    return o;
+end
+
+
+function EnemyData:setCurrentHp(newHp)
+    self.currentHp = newHp;
+    MessageCenter.SendEvent('enemyHpChange',newHp);
+    if(self.currentHp <= 0)then
+        MessageCenter.SendEvent('enemyDie',self);
+    end
+end
+
+
+
+
+return EnemyData;

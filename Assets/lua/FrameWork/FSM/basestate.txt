@@ -1,0 +1,31 @@
+﻿local BaseState = {}
+function BaseState:new()
+    local o = {};
+    self.__index = self;
+    setmetatable(o,self);
+    return o;
+end
+
+function BaseState.start(self,stateID,stateMachine,fsmOwner)
+    self.stateID = stateID;
+    self.stateMachine = stateMachine;
+    self.fsmOwner = fsmOwner;
+end
+
+function BaseState:onEnter(arg)
+
+end
+
+function BaseState.update(self)
+
+end
+
+function BaseState.fixedUpdate(self)
+
+end
+
+function BaseState.onExit(self)
+
+end
+
+return BaseState;

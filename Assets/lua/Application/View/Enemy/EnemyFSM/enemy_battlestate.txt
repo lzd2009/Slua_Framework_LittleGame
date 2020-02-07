@@ -1,0 +1,19 @@
+﻿local BaseState = AssetManager.Require('basestate.txt');
+local Enemy_BattleState = BaseState:new();
+function Enemy_BattleState:new()
+    local o = BaseState:new();
+    self.__index = self;
+    setmetatable(o,self);
+    return o;
+end
+
+function Enemy_BattleState:onEnter(arg)
+    --播放攻击动画
+    self.fsmOwner.anim:SetTrigger('attack');
+
+end
+
+function Enemy_BattleState:update()
+end
+
+return Enemy_BattleState;

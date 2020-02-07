@@ -1,0 +1,95 @@
+﻿local BaseState = AssetManager.Require('basestate.txt');
+local GlobalState = BaseState:new();
+function GlobalState:new()
+    local o = BaseState:new();
+    self.__index = self;
+    setmetatable(o,self);
+    return o;
+end
+
+function GlobalState.start(self,stateID,stateMachine,fsmOwner)
+    BaseState.start(self,stateID,stateMachine,fsmOwner);
+    MessageCenter.AddListener('enemyHitPlayer',self);
+    MessageCenter.AddListener('useSkill',self);
+    MessageCenter.AddListener('getHpItem',self);
+    MessageCenter.AddListener('getAttackItem',self);
+    MessageCenter.AddListener('win',self);
+end
+
+function GlobalState.eventHandler(self,eventName,arg)
+    if(eventName == 'enemyHitPlayer')then
+        --接收到敌人击中玩家消息，扣玩家血
+        local attack = arg;
+        local remainHp = self.fsmOwner.characterData.currentHp - attack;
+        if(remainHp < 0)then
+            remainHp = 0;
+        end
+        self.fsmOwner.characterData:setCurrentHp(remainHp);
+    elseif (eventName == 'useSkill')  then
+        --接收到玩家使用技能的消息，重置技能cd （至于动画的播放，交给battleState做了。并且useSkill事件也只能在battleState中触发）
+        if(self.stateMachine.currentState.stateID == 'battle')then
+            local useSkill = arg;
+            local characterData = self.fsmOwner.characterData;
+            if(useSkill == 1)then
+                characterData:set_timer_skill1(characterData.cd_1);
+            elseif(useSkill == 2)then
+                characterData:set_timer_skill2(characterData.cd_2);
+            end
+        end
+    elseif(eventName == 'getHpItem')then
+        --接收到玩家获取hp道具的消息，加300hp
+        local newHp = self.fsmOwner.characterData.currentHp + 300;
+        if(newHp > self.fsmOwner.characterData.maxHp)then
+            newHp = self.fsmOwner.characterData.maxHp;
+        end
+        self.fsmOwner.characterData:setCurrentHp(newHp);
+    elseif(eventName == 'getAttackItem')then
+        --接收到玩家获取提升攻击力道具的消息，加攻击力
+        local newAttack = self.fsmOwner.characterData.attack * 1.5;
+        self.fsmOwner.characterData:setAttack(newAttack);
+    elseif(eventName == 'win')then
+        --接收到胜利的消息，transomision到胜利状态
+        self.stateMachine:transimision('win');
+    end
+
+end
+
+
+function GlobalState:onEnter(arg)
+    --timer_skill1和2是倒数的，意味着还剩多少秒就可以使用对应的技能。
+    self.fsmOwner.characterData.timer_skill1 = self.fsmOwner.characterData.cd_1;
+    self.fsmOwner.characterData.timer_skill2 = self.fsmOwner.characterData.cd_2;
+end
+
+function GlobalState:update()
+end
+
+--执行技能cd的自动运转
+function GlobalState:fixedUpdate()
+    --skill1的cd运转
+    local characterData = self.fsmOwner.characterData;
+    if(characterData.skill1_ready == false)then
+        local remainTime = characterData.timer_skill1 -  Time.fixedDeltaTime;
+        if(remainTime < 0)then
+            remainTime = 0;
+        end
+        characterData:set_timer_skill1(remainTime);
+        if(characterData.timer_skill1 == 0)then
+            characterData:set_skill1_ready(true);
+        end
+    end
+    --skill2的cd运转
+    if(characterData.skill2_ready == false)then
+        local remainTime = characterData.timer_skill2 -  Time.fixedDeltaTime;
+        if(remainTime < 0)then
+            remainTime = 0;
+        end
+        characterData:set_timer_skill2(remainTime);
+        if(characterData.timer_skill2 == 0)then
+            characterData:set_skill2_ready(true);
+        end
+    end
+end
+
+
+return GlobalState;

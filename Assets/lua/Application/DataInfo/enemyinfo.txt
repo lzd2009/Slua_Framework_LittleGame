@@ -1,0 +1,12 @@
+﻿local EnemyInfo = {
+    {
+     enemyID = 1,
+     name = '骷髅战士',
+     attack = 112,
+     hp = 1234,
+    },
+
+}
+
+
+return EnemyInfo;

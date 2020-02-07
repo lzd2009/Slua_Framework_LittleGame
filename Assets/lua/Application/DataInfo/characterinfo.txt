@@ -1,0 +1,17 @@
+﻿local CharacterInfo = {
+    {
+        characterID = 1,
+        name = "unityChan",
+        attack = 132,
+        hp = 2500,
+        speed = 6, --前进速度
+        switchRoadSpeed = 3, --切换左右赛道速度
+        cd_1 = 6.5, --技能1的cd时间
+        cd_2 = 10.5,--技能2的cd时间
+        skillDamage_1 = 1.7, --技能1的伤害——根据当前攻击力*1.7倍
+        skillDamage_2 = 2.5,--技能2的伤害——根据当前攻击力*2.5倍
+    },
+
+}
+
+return CharacterInfo;

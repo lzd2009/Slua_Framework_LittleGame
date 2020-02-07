@@ -1,0 +1,25 @@
+﻿local CameraHandler = {}
+
+function CameraHandler:new()
+    local o = {};
+    self.__index = self;
+    setmetatable(o,self);
+    return o;
+end
+
+function CameraHandler.start(self)
+    self.this.useFixedUpdate = true;
+    self.chaseTransform = GameObject.FindGameObjectWithTag('Player').transform;
+
+end
+
+function CameraHandler.fixedUpdate(self)
+    --相机追人物
+    if(not Slua.IsNull(self.chaseTransform))then
+        self.transform.position = Vector3.Lerp(self.transform.position,self.chaseTransform.position,0.3);
+    end
+end
+
+
+
+return CameraHandler;

@@ -1,0 +1,14 @@
+﻿local BaseState = AssetManager.Require('basestate.txt');
+local WinState = BaseState:new();
+function WinState:new()
+    local o =BaseState:new();
+    self.__index = self;
+    setmetatable(o,self);
+    return o;
+end
+
+function WinState:onEnter(arg)
+    self.fsmOwner.anim:SetBool('battle',true);
+end
+
+return WinState;

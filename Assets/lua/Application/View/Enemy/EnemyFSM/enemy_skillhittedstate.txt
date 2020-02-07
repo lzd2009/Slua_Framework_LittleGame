@@ -1,0 +1,16 @@
+﻿local BaseState = AssetManager.Require('basestate.txt');
+local Enemy_SkillHittedState = BaseState:new();
+function Enemy_SkillHittedState:new()
+    local o = BaseState:new();
+    self.__index = self;
+    setmetatable(o,self);
+    return o;
+end
+
+function Enemy_SkillHittedState:onEnter(arg)
+end
+
+function Enemy_SkillHittedState:update()
+end
+
+return Enemy_SkillHittedState;

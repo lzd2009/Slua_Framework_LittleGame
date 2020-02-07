@@ -1,0 +1,77 @@
+﻿local BaseState = AssetManager.Require('basestate.txt');
+local BattleState = BaseState:new();
+function BattleState:new()
+    local o = BaseState:new();
+    o.timer = 0;
+    self.__index = self;
+    setmetatable(o,self);
+    return o;
+end
+
+function BattleState.start(self,stateID,stateMachine,fsmOwner)
+    BaseState.start(self,stateID,stateMachine,fsmOwner);
+    MessageCenter.AddListener('enemyDestroy',self);
+    MessageCenter.AddListener('useSkill',self);
+end
+
+function BattleState.eventHandler(self,eventName,arg)
+    if(eventName == 'enemyDestroy')then
+        local destroyEnemy = arg;
+        if(destroyEnemy == self.battleEnemy)then
+            --当前与角色战斗的enemy已经死亡并消失了，角色继续前进
+            self.stateMachine:transimision('run');
+        end
+    elseif(eventName == 'useSkill')then
+        --接收到使用技能的消息，播放动画
+        if(self.stateMachine.currentState.stateID == self.stateID)then
+            local skill = arg;
+            if(skill == 1)then
+                self.fsmOwner.anim:SetTrigger('skill1');
+            elseif(skill ==2)then
+                self.fsmOwner.anim:SetTrigger('skill2');
+            end
+            self.timer = 0;
+        end
+    end
+end
+
+function BattleState:onEnter(arg)
+    --当前与角色battle的敌人
+    self.battleEnemy = arg;
+    --将除了这个敌人外的其他敌人的受击检测，都关掉，防止打到其他敌人
+
+    --动画播放idle
+    self.fsmOwner.anim:SetBool('battle',true);
+    --每隔一段时间，触发一次攻击动画。
+    self.fsmOwner.anim:SetTrigger('attack1');
+    self.timer = 0;
+end
+
+function BattleState:onExit()
+    --动画播放run
+    self.fsmOwner.anim:SetBool('battle',false);
+    self.battleEnemy = nil;
+    self.timer = 0;
+end
+
+function BattleState:update()
+
+end
+
+function BattleState:fixedUpdate()
+    if(self.battleEnemy.enemyData.currentHp > 0)then
+        self.timer = self.timer + Time.fixedDeltaTime;
+        if(self.timer >= self.fsmOwner.attackInterval)then
+            self.timer = 0;
+            local attackType = math.random(1,2);
+            if(attackType == 1)then
+                self.fsmOwner.anim:SetTrigger('attack1');
+            elseif(attackType == 2)then
+                self.fsmOwner.anim:SetTrigger('attack2');
+            end
+
+        end
+    end
+end
+
+return BattleState;

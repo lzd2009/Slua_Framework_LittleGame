@@ -1,0 +1,121 @@
+﻿
+
+local Character = {}
+
+function Character:new(characterData)
+    local o =  {};
+    o.road = 'mid';
+    --攻击距离，在这么近的距离内探测到敌人，就会进入battle状态。
+    o.attackRange = 2.5;
+    --攻击间隔。在battle状态，每隔这么多秒，就触发一次攻击。
+    o.attackInterval = 1.5;
+    o.characterData = characterData;
+    self.__index = self;
+    setmetatable(o,self);
+    return o;
+end
+
+function Character.start(self)
+    self.this.useUpdate = true;
+    self.this.useFixedUpdate = true;
+    self.this.useOnTriggerEnter = true;
+    self.anim = self.gameObject:GetComponent(Animator);
+    self.currentBattleEnemy = nil;
+    self:setStateMachine();
+    self:setWeaponCollider();
+end
+
+function Character:setStateMachine()
+    local StateMachine = AssetManager.Require('statemachine.txt');
+    local stateMachine = StateMachine:new();
+    self.stateMachine = stateMachine;
+    local globalState = AssetManager.Require('globalstate.txt'):new();
+    local idleState = AssetManager.Require('idlestate.txt'):new();
+    local runState = AssetManager.Require('runstate.txt'):new();
+    local switchRoadState = AssetManager.Require('switchroadstate.txt'):new();
+    local battleState = AssetManager.Require('battlestate.txt'):new();
+    local winState = AssetManager.Require('winstate.txt'):new();
+    self.stateMachine:addToMap('global',globalState);
+    self.stateMachine:addToMap('idle',idleState);
+    self.stateMachine:addToMap('run',runState);
+    self.stateMachine:addToMap('switchRoad',switchRoadState);
+    self.stateMachine:addToMap('battle',battleState);
+    self.stateMachine:addToMap('win',winState);
+    self.stateMachine:start(self);
+    self.stateMachine:setDefaultState('idle','global');
+end
+
+--设置攻击用的collider的触发时机
+function Character:setWeaponCollider()
+    self.attack_collider = self.transform:Find('Character1_Reference'):Find('Character1_Hips'):Find('Character1_RightUpLeg'):Find('Character1_RightLeg'):GetComponent(Collider);
+    self.skill1_collider = self.transform:Find('Character1_Reference'):Find('Character1_Hips'):Find('Character1_Spine'):Find('Character1_Spine1'):Find('Character1_Spine2'):Find('Character1_RightShoulder'):Find('Character1_RightArm'):Find('Character1_RightForeArm'):Find('Character1_RightHand'):GetComponent(Collider);
+    self.skill2_collider = self.transform:Find('Character1_Reference'):Find('Character1_Hips'):Find('Character1_RightUpLeg'):Find('Character1_RightLeg'):Find('Character1_RightFoot'):Find('Character1_RightToeBase'):GetComponent(Collider);
+    self.attack_collider.enabled = false;
+    self.skill1_collider.enabled = false;
+    self.skill2_collider.enabled = false;
+    self.currentAttackType = 'attack';
+    local el = EventListener.Get(self.gameObject);
+    el.onAnimEvent = function(animEventName)
+        if(animEventName == 'attack_start')then
+            self.attack_collider.enabled = true;
+            self.currentAttackType = 'attack';
+        elseif(animEventName == 'attack_end')then
+            self.attack_collider.enabled = false;
+        elseif(animEventName == 'skill1_start')then
+            self.currentAttackType = 'skill1';
+            self.skill1_collider.enabled = true;
+            self.attack_collider.enabled = false;
+            self.skill2_collider.enabled = false;
+        elseif(animEventName == 'skill1_end')then
+            self.skill1_collider.enabled = false;
+        elseif(animEventName == 'skill2_start')then
+            self.currentAttackType = 'skill2';
+            self.skill2_collider.enabled = true;
+            self.attack_collider.enabled = false;
+            self.skill1_collider.enabled = false;
+        elseif(animEventName == 'skill2_end')then
+            self.skill2_collider.enabled = false;
+        end
+    end
+end
+
+function Character.fixedUpdate(self)
+    self.stateMachine:fixedUpdate();
+end
+function Character.update(self)
+    self.stateMachine:update();
+end
+
+--处理碰撞到敌人，碰撞到道具
+function Character.onTriggerEnter(self,args)
+    local collider = args;
+    if(collider.tag == 'Enemy' )then
+        local enemy = collider.gameObject:GetComponent(LuaBehaviour).table;
+        if( (enemy == self.currentBattleEnemy) and (enemy.enemyData.currentHp > 0))then   --只有这个敌人是当前战斗中敌人，才允许发送消息。（防止误击左右敌人）
+            local totalAttack = 0;
+            if(self.currentAttackType == 'attack')then
+                totalAttack = self.characterData.attack;
+            elseif(self.currentAttackType == 'skill1')then
+                totalAttack = self.characterData.attack * self.characterData.skillDamage_1;
+            elseif(self.currentAttackType == 'skill2')then
+                totalAttack = self.characterData.attack * self.characterData.skillDamage_2;
+            end
+            MessageCenter.SendEvent('playerHitEnemy',{enemy,totalAttack,self.currentAttackType});
+        end
+    elseif(collider.gameObject.name == 'hp')then
+        GameObject.Destroy(collider.transform.parent.gameObject);
+        MessageCenter.SendEvent('getHpItem');
+    elseif(collider.gameObject.name == 'attack')then
+        GameObject.Destroy(collider.transform.parent.gameObject);
+        MessageCenter.SendEvent('getAttackItem');
+        elseif(collider.gameObject.name == 'finishFlag')then
+        --到终点了，结束游戏
+        GameObject.Destroy(collider.gameObject);
+        MessageCenter.SendEvent('win');
+    end
+end
+
+
+
+
+return Character;

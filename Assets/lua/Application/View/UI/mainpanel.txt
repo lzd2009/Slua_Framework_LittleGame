@@ -1,0 +1,21 @@
+﻿
+local MainPanel = {}
+
+function MainPanel:new()
+    local o = {};
+    self.__index = self;
+    setmetatable(o,self);
+    return o;
+end
+
+function MainPanel.start(self)
+    local enterGameBtn = self.transform:Find('enterGameBtn'):GetComponent(UI.Button);
+    enterGameBtn.onClick:AddListener(self.onGameBtnClick);
+end
+
+function MainPanel.onGameBtnClick()
+    local Scenes = AssetManager.Require('scenes.txt');
+    ScenesManager.LoadAssetBundleScene('scenes.ab','level_1',Scenes.loadingHandler,Scenes.loadedHandler);
+end
+
+return MainPanel;

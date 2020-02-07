@@ -1,0 +1,46 @@
+﻿local BaseState = AssetManager.Require('basestate.txt');
+local Enemy_GlobalState = BaseState:new();
+function Enemy_GlobalState:new()
+    local o = BaseState:new();
+    self.__index = self;
+    setmetatable(o,self);
+    return o;
+end
+
+function Enemy_GlobalState.start(self,stateID,stateMachine,fsmOwner)
+    BaseState.start(self,stateID,stateMachine,fsmOwner);
+    MessageCenter.AddListener('playerHitEnemy',self);
+    MessageCenter.AddListener('enemyDie',self);
+end
+
+function Enemy_GlobalState.eventHandler(self,eventName,arg)
+    if(eventName == 'playerHitEnemy')then
+        local attackedEnemy = arg[1];
+        local totalAttack = arg[2];
+        local currentAttackType = arg[3];
+        if(attackedEnemy == self.fsmOwner)then
+            local remainHp = self.fsmOwner.enemyData.currentHp - totalAttack;
+            if(remainHp < 0)then
+                remainHp = 0;
+            end
+            self.fsmOwner.enemyData:setCurrentHp(remainHp);
+        end
+    elseif (eventName == 'enemyDie')then
+        local enemyData = arg;
+        if(enemyData == self.fsmOwner.enemyData)then
+            self.stateMachine:transimision('die');
+        end
+    end
+end
+
+
+function Enemy_GlobalState:onEnter(arg)
+end
+
+function Enemy_GlobalState:update()
+end
+
+
+
+
+return Enemy_GlobalState;
