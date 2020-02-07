@@ -75,8 +75,6 @@ public class LuaBehaviour : MonoBehaviour {
         table["this"] = this;
         table["transform"] = transform;
     }
-    //todo：制作赛道道具，一个加hp的道具，一个攻击力强化一段时间的道具。暂时做这2个。然后ui方面也要做好，吃到的时候要显示一行字体：恢复hp、攻击力暂时增加
-        //道具制作完了，就摆放一下level场景的road，那个road现在决定使用新建空物体，特殊命名的方式来配置是放怪物还是放道具。
 
     protected void CallLuaFunction(string funcName,LuaTable self, object[] args = null)
     { 

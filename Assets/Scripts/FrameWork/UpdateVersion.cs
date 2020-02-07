@@ -217,30 +217,7 @@ public class UpdateVersion : MonoBehaviour {
         }
     }
     
-    /// <summary>
-    /// 使用unityWebrequest下载文件,可用与本地加载或远程下载
-    /// </summary>
-    /// <param name="url">下载地址url</param>
-    /// <param name="onDownloadFinishHandler">下载完成回调</param>
-    /// <returns></returns>
-    //private IEnumerator DownLoadFile(string url, Action<UnityWebRequest> onDownloadFinishHandler)
-    //{
-    //    Debug.Log(url);
-    //    UnityWebRequest request = UnityWebRequest.Get(url);       
-    //    yield return request.SendWebRequest();
-    //    if (request.isNetworkError || request.isHttpError)
-    //    {
-    //        throw new Exception("UnityWebRequest download had an error: " + request.error);               
-    //    }
-    //    else
-    //    {
-    //        if (request.isDone)
-    //        {
-    //            onDownloadFinishHandler(request);           
-    //        }
-    //    }
-        
-    //}
+   
     //使用www类来下载web资源
     IEnumerator DownLoadFile_WWWway(string url, Action<WWW> onDownloadFinishHandler)
     {

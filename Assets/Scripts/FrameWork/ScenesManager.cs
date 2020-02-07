@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 using System;
 using SLua;
 [CustomLuaClass]
+//场景管理器，异步加载场景
 public class ScenesManager {
 
 
@@ -17,13 +18,12 @@ public class ScenesManager {
 
     public static void LoadAssetBundleScene(string relativeSceneABName, string sceneName, Action<float> loadingHandler, Action<string> loadedHandler)
     {
-        //改成 Coroutine 类型，而不是委托，不然报错。不然就lua那边。写成函数。返回ienumber的。先试试lua那边。
+       
         luaEntry.StartCoroutine(LoadAssetBundleScene_Async(relativeSceneABName, sceneName, loadingHandler, loadedHandler));
     }
 
     private static IEnumerator LoadAssetBundleScene_Async(string relativeSceneABName, string sceneName, Action<float> loadingHandler, Action<string> loadedHandler)
     {
-        //我怀疑static类型的coroutine，只能跑一次。再跑一次会出错。todo：test
         string path = Application.persistentDataPath + "/" + relativeSceneABName;
         AssetBundleCreateRequest abRequest = AssetBundle.LoadFromFileAsync(path);
         yield return abRequest;
