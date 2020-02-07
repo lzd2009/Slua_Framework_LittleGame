@@ -5,6 +5,8 @@
 
 lua文件的加载：lua文件全部打包到同一个assetBundle，叫做lua.ab。由于lua的require函数无法直接加载ab包中的lua文本文件，所以在资源热更新完成后，将会在c#端加载并存储所有lua表：直接从lua.ab中加载出所有lua表，用<luafileName，luaTable>的形式缓存到一个字典里。以后在lua端想要使用require函数拿到luaTable的地方，就调用c#端的函数AssetManager.Require(luafileName)，取到缓存在字典中的luaTable。  
 
+lua逻辑的进入：热更新由Asset/Scripts/FrameWork/UpdateVersion.cs执行，热更新完成后，会执行名为main的lua文件(Asset/Lua/FrameWork/main.txt)，由此进入lua逻辑。
+
 lua与unity生命周期函数的交互：写了一个LuaBehaviour.cs脚本继承monoBehaviour，一个LuaBehaviour.cs绑定一个lua table。将start,update,fixedUpdate等方法套接到lua中执行。在lua端绑定的时候，代码应该像这样：  
     local characterAsset = AssetManager.LoadAsset('character.ab','character');--加载character.ab包中的character预制体  
     local characterGo = GameObject.Instantiate(characterAsset);--生成游戏物体  
