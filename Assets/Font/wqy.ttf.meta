@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: 1da167164944c5a4fb9289ed53b142f1
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 18
+  forceTextureCase: -1
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: FZLanTingYuan-DB-GBK
+  fontNames:
+  - FZLanTingYuan-DB-GBK
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 3
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

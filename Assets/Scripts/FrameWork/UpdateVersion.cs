@@ -49,7 +49,7 @@ public class UpdateVersion : MonoBehaviour {
     private void Awake()
     {
 #if DEVELOP_MODE
-        Debug.Log("开发模式，读取本地ab包，不需要连接服务器下载。");
+        //Debug.Log("开发模式，读取本地ab包，不需要连接服务器下载。");
         DevelopMode();
         return;
 #endif
