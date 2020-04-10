@@ -1,193 +1,66 @@
 ﻿local GamingPanel = {}
 
-function GamingPanel:new(character)
+function GamingPanel:new(gameObject)
     local o = {};
     self.__index = self;
     setmetatable(o,self);
-    o:onCharacterChange(character);
+    o.gameObject = gameObject;
+    o.transform = o.gameObject.transform;
+    o:initUI();
     return o;
 end
 
 function GamingPanel.start(self)
-    self:initUI();
-    MessageCenter.AddListener('enterBattle',self);
-    MessageCenter.AddListener('enemyDestroy',self);
-    MessageCenter.AddListener('skill_cd',self);
-    MessageCenter.AddListener('getHpItem',self);
-    MessageCenter.AddListener('getAttackItem',self);
-    MessageCenter.AddListener('win',self);
-    self:SetTouchArea();
 end
 
 function GamingPanel.eventHandler(self,eventName,arg)
-    if(eventName == 'enterBattle')then
-        self:onEnemyChange(arg);
-    elseif(eventName == 'enemyHpChange')then
-        self:onEnemyHpChange(arg);
-    elseif(eventName == 'characterHpChange')then
-        self:onCharacterHpChange(arg);
-    elseif(eventName == 'enemyDestroy')then
-        self:onEnemyDestroy(arg);
-    elseif(eventName == 'skill_cd')then
-        self:onSkillCD(arg);
-    elseif(eventName == 'getHpItem')then
-        self:onGetHpItem();
-    elseif(eventName == 'getAttackItem')then
-        self:onGetAttackItem();
-    elseif(eventName == 'win')then
-        self:onWin();
-    end
 end
 
 
 
 function GamingPanel:initUI()
-    local characterData = self.currentShowCharacter.characterData;
-    self.characterStatus = self.transform:Find('characterStatus');
-    self.hp = self.characterStatus:Find('hp');
-    self.hpSlider = self.hp:Find('hpSlider'):GetComponent(UI.Slider);
-    self.hpSlider.value = characterData.currentHp/characterData.maxHp;
-    self.currentHpText = self.hp:Find('currentHpText'):GetComponent(UI.Text);
-    self.currentHpText.text = characterData.currentHp;
-    self.totalHpText = self.hp:Find('totalHpText'):GetComponent(UI.Text);
-    self.totalHpText.text = characterData.maxHp;
 
-    self.characterSkill = self.transform:Find('characterSkill');
-    self.skill1Btn = self.characterSkill:Find('skill1Btn'):GetComponent(UI.Button);
-    self.skill1Btn.onClick:AddListener(function ()
-                if(self.currentShowCharacter.characterData.skill1_ready == true)then
-                    MessageCenter.SendEvent('useSkill',1);
+    --UI元素查找
+    self.gridParent = self.transform:Find('content/Content');
+    self.dirSprite = self.transform:Find('Info/dir/dirIcon'):GetComponent(UI.Image);
+    self.remainStep = self.transform:Find('Info/remainStep/zhi'):GetComponent(UI.Text);
+    self.nextIcon = self.transform:Find('Info/nextGrid/nextImage'):GetComponent(UI.Image);
+    self.Score = self.transform:Find('Info/Score/Text'):GetComponent(UI.Text);
+    
+
+    local FormData = AssetManager.Require('formdata.txt');
+    local LineData = AssetManager.Require('linedata.txt');
+    local GridData = AssetManager.Require('griddata.txt');
+    local formData = FormData:new();
+    --查找行元素
+    local lines = self.gridParent:GetComponentsInChildren(Transform);
+
+    for k,v in ipairs(lines) do
+        if(v ~= self.gridParent)then
+            local lineData = LineData:new();
+            --查找列元素
+            local grids =  lines:GetComponentsInChildren(Transform);
+            for z,x in ipairs(grids)do
+                if(x ~= grids)then
+                    --生成grid数据
+                    local gridData = GridData:new(grids);
+                    lineData:addGridData(z,gridData);
                 end
-            end);
-    self.skill1RemainTimeText = self.skill1Btn.transform:Find('cdText'):GetComponent(UI.Text);
-    self.skill1CDImage = self.skill1Btn.transform:Find('cdImage'):GetComponent(UI.Image);
-    self.skill2Btn = self.characterSkill:Find('skill2Btn'):GetComponent(UI.Button);
-    self.skill2Btn.onClick:AddListener(function ()
-                if(self.currentShowCharacter.characterData.skill2_ready == true)then
-                    MessageCenter.SendEvent('useSkill',2);
-                end
-            end);
-    self.skill2RemainTimeText = self.skill2Btn.transform:Find('cdText'):GetComponent(UI.Text);
-    self.skill2CDImage = self.skill2Btn.transform:Find('cdImage'):GetComponent(UI.Image);
-
-    self.enemyStatus = self.transform:Find('enemyStatus');
-    self.enemyName = self.enemyStatus:Find('enemyNameText');
-    self.enemyHp = self.enemyStatus:Find('hp');
-    self.enemyHpSlider = self.enemyHp:Find('hpSlider'):GetComponent(UI.Slider);
-    self.enemyCurrentHpText = self.enemyHp:Find('currentHpText'):GetComponent(UI.Text);
-    self.enemyTotalHpText = self.enemyHp:Find('totalHpText'):GetComponent(UI.Text);
-    self.enemyStatus.gameObject:SetActive(false);
-
-    self.tips = self.transform:Find('tips');
-    self.getItemTipText = self.tips:Find('getItemTip'):GetComponent(UI.Text);
-    self.tips.gameObject:SetActive(false);
-end
-
-
-function GamingPanel:onCharacterChange(character)
-    self.currentShowCharacter = character;
-    MessageCenter.AddListener('characterHpChange',self);
-end
-function GamingPanel:onCharacterHpChange(newHp)
-    self.hpSlider.value = newHp/self.currentShowCharacter.characterData.maxHp;
-    self.currentHpText.text = newHp;
-end
-
-function GamingPanel:onEnemyChange(enemy)
-    self.enemyStatus.gameObject:SetActive(true);
-    self.currentShowEnemy = enemy;
-
-    self.enemyHpSlider.value = self.currentShowEnemy.enemyData.currentHp/self.currentShowEnemy.enemyData.maxHp;
-    self.enemyCurrentHpText.text = self.currentShowEnemy.enemyData.currentHp;
-    self.enemyTotalHpText.text = self.currentShowEnemy.enemyData.maxHp;
-    MessageCenter.RemoveListener('enemyHpChange',self);--先将对上个敌人的listen移除。然后在添加listen
-    MessageCenter.AddListener('enemyHpChange',self);
-
-end
-function GamingPanel:onEnemyHpChange(newHp)
-    self.enemyHpSlider.value = newHp/self.currentShowEnemy.enemyData.maxHp;
-    self.enemyCurrentHpText.text = newHp;
-end
-
-function GamingPanel:onEnemyDestroy(enemy)
-    if(enemy == self.currentShowEnemy)then
-        self.enemyStatus.gameObject:SetActive(false);
-    end
-end
-
-function GamingPanel:onSkillCD(arg)
-    local skill = arg[1];
-    local remainTime = arg[2];
-    if(skill == 1)then
-        self.skill1CDImage.fillAmount =(self.currentShowCharacter.characterData.cd_1 - remainTime) / self.currentShowCharacter.characterData.cd_1;
-        if(remainTime ~= 0)then
-            self.skill1RemainTimeText.gameObject:SetActive(true);
-            self.skill1RemainTimeText.text = string.format('%.1f',remainTime);
-        else
-            self.skill1RemainTimeText.gameObject:SetActive(false);
-        end
-
-    elseif(skill == 2)then
-        self.skill2CDImage.fillAmount =(self.currentShowCharacter.characterData.cd_2 - remainTime) / self.currentShowCharacter.characterData.cd_2;
-        if(remainTime ~=0)then
-            self.skill2RemainTimeText.gameObject:SetActive(true);
-            self.skill2RemainTimeText.text = string.format('%.1f',remainTime);
-        else
-            self.skill2RemainTimeText.gameObject:SetActive(false);
-        end
-    end
-end
-
-
-
-function GamingPanel:onGetHpItem()
-    self.getItemTipText.text = '回复血量';
-    self.tips.gameObject:SetActive(true);
-    local autoHideCoroutine = coroutine.create(function()
-        Yield(WaitForSeconds(1.5))
-        self.tips.gameObject:SetActive(false);
-    end)
-    coroutine.resume(autoHideCoroutine);
-end
-
-function GamingPanel:onGetAttackItem()
-    self.getItemTipText.text = '提升攻击力';
-    self.tips.gameObject:SetActive(true);
-    local autoHideCoroutine = coroutine.create(function()
-        Yield(WaitForSeconds(1.5))
-        self.tips.gameObject:SetActive(false);
-    end)
-    coroutine.resume(autoHideCoroutine);
-end
-
-function GamingPanel:onWin()
-    self.gameObject:SetActive(false);
-    --显示游戏结果面板 todo :应该写个UImanager。只用传递ui名字，自动做这件事
-    local gamingresultpanelGo = UIManager.ShowPanel('gaming_ui.ab','GameResultPanel');
-    local gamingresultpanel = AssetManager.Require('gamingresultpanel.txt');
-    gamingresultpanelGo:AddComponent(LuaBehaviour):BindLuaTable(gamingresultpanel);
-end
-
-
---设置监听手指在区域上滑动的操作。因为输入种类之一是获取在区域滑动的方向。功能是根据手指滑动方向改变玩家走3条赛道中的哪一道
-function GamingPanel:SetTouchArea()
-    self.touchArea = self.transform:Find('touchArea').gameObject;
-    local el = EventListener.Get(self.touchArea);
-    local sended_Flag = false;
-    el.onDrag = function(eventData)
-            if(sended_Flag == false)then
-                if(eventData.delta.x < 0)then
-                    --是向左滑动，发送向左的消息
-                    MessageCenter.SendEvent('move','left');
-                else
-                    --向右滑动，发送向右的消息
-                    MessageCenter.SendEvent('move','right');
-                end
-                sended_Flag = true;
             end
+            formData:addLineData(k,lineData);
         end
-    el.onEndDrag = function(eventData)
-        sended_Flag = false;
+    end
+
+
+    --这里应该由数据层决定。。
+    self.remainStep.text = "10"; 
+
+
+    --test data.
+    for k,v in ipairs(formData.lines)do
+        for z,x in ipairs(v)do
+            Debug.Log(x.grid.gameObject.name);
+        end       
     end
 end
 

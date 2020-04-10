@@ -1,0 +1,37 @@
+local Grid = {}
+
+function Grid:new(gameObject,gridData)
+    local o = {};
+    self.__index = self;
+    setmetatable(o,self);
+    o.gameObject = gameObject;
+    o.gridData = gridData;
+    --加监听
+    o.el = EventListener.Get(o.gameObject);
+    o.el.onClick = function()
+       Print("点击了grid,go 是：" .. o.gameObject.name);
+    end;
+
+    return o;
+end
+
+function Grid.start(self)
+    self:initUI();
+end
+
+function Grid.eventHandler(self,eventName,arg)
+
+end
+
+function Grid.onClick(self)
+
+end
+
+
+
+function Grid:initUI()
+    
+end
+
+
+return Grid;

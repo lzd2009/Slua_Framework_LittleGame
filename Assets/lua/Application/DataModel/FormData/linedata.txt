@@ -1,0 +1,15 @@
+local LineData = {}
+function LineData:new()
+    local o = {};
+    self.__index = self;
+    setmetatable(o,self);
+    o.gridDatas = {}; 
+    return o;
+end
+
+
+function LineData:addGridData(index,gridData)
+    self.gridDatas[index] = gridData;
+end
+
+return LineData;

@@ -1,0 +1,25 @@
+ManifestFileVersion: 0
+CRC: 276574612
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: lua.ab
+      Dependencies: {}
+    Info_1:
+      Name: main_ui.ab
+      Dependencies: {}
+    Info_2:
+      Name: canvas.ab
+      Dependencies: {}
+    Info_3:
+      Name: gaming_common.ab
+      Dependencies: {}
+    Info_4:
+      Name: character.ab
+      Dependencies: {}
+    Info_5:
+      Name: enemy.ab
+      Dependencies: {}
+    Info_6:
+      Name: gaming_ui.ab
+      Dependencies: {}

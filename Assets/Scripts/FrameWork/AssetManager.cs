@@ -76,9 +76,14 @@ public class AssetManager {
     }
     private static void InitManifest()
     {
-        
-        AssetBundle bundle = AssetBundle.LoadFromFile(Application.persistentDataPath +"/"+ Tools.AssetBundleCreateDirName + ".ab");
+        //原来的
+        //AssetBundle bundle = AssetBundle.LoadFromFile(Application.persistentDataPath +"/"+ Tools.AssetBundleCreateDirName + ".ab");
+        //assetManifest = bundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+
+        //2020.4.9修改：
+        AssetBundle bundle = AssetBundle.LoadFromFile(Application.persistentDataPath + "/" + "StreamingAssets.ab");
         assetManifest = bundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+
     }
 
     #region 对其他资源文件的管理

@@ -1,0 +1,11 @@
+local GridData = {}
+function GridData:new(grid)
+    local o = {};
+    self.__index = self;
+    setmetatable(o,self);
+    o.grid = grid;
+    return o;
+end
+
+
+return GridData;

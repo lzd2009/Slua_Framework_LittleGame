@@ -46,14 +46,40 @@ public class UpdateVersion : MonoBehaviour {
         EnterLuaLogic();
     }
 
+    //2020.4.9：完全不需要联机下载资源，放入streamingAsset文件夹，运行时直接将ab包拷贝到present文件夹。
+    private void DirectMode()
+    {
+        //先清除persistent文件夹
+        Tools.DeleteDir(Application.persistentDataPath);
+        //将StreamingAsset下的文件拷贝到persistent文件夹。
+        string[] files = Directory.GetFiles(Application.streamingAssetsPath + "/", "*", SearchOption.AllDirectories);
+        for (int i = 0; i < files.Length; i++)
+        {
+            string filePath = files[i];
+            string extension = filePath.Substring(files[i].LastIndexOf("."));
+            if (extension == ".ab")
+            {
+                string[] s = filePath.Split('/');
+                string localPath = s[s.Length - 1];
+                File.Copy(filePath, Application.persistentDataPath + "/" + localPath);
+            }
+        }
+        //进入逻辑。
+        AssetManager.InitAssetManager();
+        print("assetManager初始化完成");
+        print("开始进入lua逻辑");
+        EnterLuaLogic();
+    }
+
     private void Awake()
     {
-#if DEVELOP_MODE
+        DirectMode();
+//#if DEVELOP_MODE
         //Debug.Log("开发模式，读取本地ab包，不需要连接服务器下载。");
-        DevelopMode();
-        return;
-#endif
-        InitLocalVersionDic();
+        //DevelopMode();
+        //return;
+//#endif
+        //InitLocalVersionDic();
     }
 
     //读取persistentDataPath中的本地version.txt文件并用于初始化本地版本字典，完成后调用InitServerVersionDic

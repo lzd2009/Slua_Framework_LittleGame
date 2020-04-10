@@ -1,17 +1,21 @@
 ﻿
 local MainPanel = {}
 
-function MainPanel:new()
+function MainPanel:new(gameObject)
     local o = {};
     self.__index = self;
     setmetatable(o,self);
+    o.gameObject = gameObject;
+    o.transform = o.gameObject.transform;
+    o:InitUI();
     return o;
 end
 
-function MainPanel.start(self)
+function MainPanel:InitUI()
     local enterGameBtn = self.transform:Find('enterGameBtn'):GetComponent(UI.Button);
     enterGameBtn.onClick:AddListener(self.onGameBtnClick);
 end
+
 
 function MainPanel.onGameBtnClick()
     local Scenes = AssetManager.Require('scenes.txt');
