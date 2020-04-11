@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: faf0d6f974ab59f459a82ca8ef677069
+guid: 8eb86cc27d993ba48a8c21334046dba2
 TextureImporter:
   fileIDToRecycleName: {}
   externalObjects: {}
@@ -112,5 +112,5 @@ TextureImporter:
     physicsShape: []
   spritePackingTag: GuildDinner
   userData: 
-  assetBundleName: 
-  assetBundleVariant: 
+  assetBundleName: gaming_ui
+  assetBundleVariant: ab

@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 3892762828
+CRC: 2572517843
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: f69011bb2bdd199d4424859b1b5a6431
+    Hash: 093c7228353654c8e2f80edb5b68b9e2
   TypeTreeHash:
     serializedVersion: 2
     Hash: 5ad585dd02dfb5016c0dad519eab8f49
@@ -13,13 +13,14 @@ ClassTypes:
   Script: {instanceID: 0}
 Assets:
 - Assets/lua/Application/View/Enemy/EnemyFSM/enemy_battlestate.txt
-- Assets/lua/Application/DataModel/FormData/formdata.txt
+- Assets/lua/Application/DataModel/FormData/form.txt
 - Assets/lua/Application/View/Player/camerahandler.txt
 - Assets/lua/Application/View/Enemy/EnemyFSM/enemy_skillhittedstate.txt
 - Assets/lua/Application/View/Player/PlayerFSM/battlestate.txt
 - Assets/lua/Application/View/UI/gamingresultpanel.txt
 - Assets/lua/Application/View/Player/PlayerFSM/globalstate.txt
 - Assets/lua/Application/DataModel/Enemy/enemydata.txt
+- Assets/lua/Application/DataModel/PlayingData/playingdata.txt
 - Assets/lua/Application/View/Enemy/EnemyFSM/enemy_diestate.txt
 - Assets/lua/Application/View/Enemy/EnemyFSM/enemy_globalstate.txt
 - Assets/lua/Application/View/Enemy/EnemyFSM/enemy_idlestate.txt
@@ -35,9 +36,12 @@ Assets:
 - Assets/lua/Application/View/Player/PlayerFSM/idlestate.txt
 - Assets/lua/Application/View/UI/mainpanel.txt
 - Assets/lua/Application/DataModel/Character/characterdata.txt
+- Assets/lua/FrameWork/globalmanager.txt
 - Assets/lua/Application/View/Player/PlayerFSM/winstate.txt
 - Assets/lua/Application/DataInfo/characterinfo.txt
 - Assets/lua/Application/View/Player/PlayerFSM/runstate.txt
 - Assets/lua/FrameWork/main.txt
+- Assets/lua/Application/View/Gaming/item.txt
 - Assets/lua/Application/View/UI/gamingpanel.txt
+- Assets/lua/Application/View/Gaming/grid.txt
 Dependencies: []

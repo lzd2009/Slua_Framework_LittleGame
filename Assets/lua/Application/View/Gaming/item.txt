@@ -1,0 +1,29 @@
+local Item = {}
+
+function Item:new(gameObject,itemType,score,grid)
+    local o = {};
+    self.__index = self;
+    setmetatable(o,self);
+    o.gameObject = gameObject;
+    o.itemType = itemType;
+    o.score = score;
+    o.grid = grid;
+    return o;
+end
+
+
+
+function Item:clear()
+    GameObject.Destroy(self.gameObject);
+    self.grid = nil;
+end
+
+
+
+function Item.eventHandler(self,eventName,arg)
+
+end
+
+
+
+return Item;

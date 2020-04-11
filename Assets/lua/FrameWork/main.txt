@@ -5,6 +5,7 @@ local main = {}
 function main.start()
     local Scenes = AssetManager.Require('scenes.txt');
 	ScenesManager.LoadAssetBundleScene('scenes.ab','main',Scenes.loadingHandler,Scenes.loadedHandler);
+    
 end
 
 

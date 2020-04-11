@@ -6,62 +6,95 @@ function GamingPanel:new(gameObject)
     setmetatable(o,self);
     o.gameObject = gameObject;
     o.transform = o.gameObject.transform;
+    o.globalManager = AssetManager.Require("globalmanager.txt");
     o:initUI();
     return o;
 end
-
-function GamingPanel.start(self)
-end
-
-function GamingPanel.eventHandler(self,eventName,arg)
-end
-
 
 
 function GamingPanel:initUI()
 
     --UI元素查找
     self.gridParent = self.transform:Find('content/Content');
-    self.dirSprite = self.transform:Find('Info/dir/dirIcon'):GetComponent(UI.Image);
+    self.dirRectTransform = self.transform:Find('Info/dir/dirIcon'):GetComponent(RectTransform);
     self.remainStep = self.transform:Find('Info/remainStep/zhi'):GetComponent(UI.Text);
     self.nextIcon = self.transform:Find('Info/nextGrid/nextImage'):GetComponent(UI.Image);
-    self.Score = self.transform:Find('Info/Score/Text'):GetComponent(UI.Text);
+    self.score = self.transform:Find('Info/Score/Text'):GetComponent(UI.Text);
     
 
-    local FormData = AssetManager.Require('formdata.txt');
-    local LineData = AssetManager.Require('linedata.txt');
-    local GridData = AssetManager.Require('griddata.txt');
-    local formData = FormData:new();
-    --查找行元素
-    local lines = self.gridParent:GetComponentsInChildren(Transform);
+    local Form = AssetManager.Require('form.txt');
+    local Grid = AssetManager.Require('grid.txt');
+    local form = Form:new(self.gridParent);
 
-    for k,v in ipairs(lines) do
-        if(v ~= self.gridParent)then
-            local lineData = LineData:new();
-            --查找列元素
-            local grids =  lines:GetComponentsInChildren(Transform);
-            for z,x in ipairs(grids)do
-                if(x ~= grids)then
-                    --生成grid数据
-                    local gridData = GridData:new(grids);
-                    lineData:addGridData(z,gridData);
-                end
-            end
-            formData:addLineData(k,lineData);
-        end
+    local gridPrefab = AssetManager.LoadAsset('gaming_ui.ab','grid');
+    --创建9*7的grid,并设置好位置，并放进Form管理
+    for i = 0,6,1 do
+        local line = {};
+        for j = 0,8,1 do
+            local gridGo = GameObject.Instantiate(gridPrefab);
+            gridGo.transform:SetParent(self.gridParent,false);
+            gridGo:GetComponent(RectTransform).localPosition = Vector3(j*85,-i*85,0);
+            local grid = Grid:new(gridGo,i,j,self.gridParent);
+             line[i] = grid;
+            --随机生成grid上面的item
+            local itemType = UnityEngine.Random.Range(1,5);
+            grid:CreateItem(itemType);
+            --添加进grid
+            line[j] = grid;         
+        end 
+        form.lines[i] = line;
     end
+    
+    --右上角UI初始化显示
+    self:onNextDirChange(self.globalManager.playingData.nextDir);
+    self:onNextItemChange(self.globalManager.playingData.nextType);
+    self:onRemainStepChange(self.globalManager.playingData.remainStep);
+    self:onScoreChange(self.globalManager.playingData.score);
+    --加事件监听
+    MessageCenter.AddListener('remainStepChange',self);
+    MessageCenter.AddListener('scoreChange',self);
+    MessageCenter.AddListener('nextDirChange',self);
+     MessageCenter.AddListener('nextItemTypeChange',self);
+end
 
-
-    --这里应该由数据层决定。。
-    self.remainStep.text = "10"; 
-
-
-    --test data.
-    for k,v in ipairs(formData.lines)do
-        for z,x in ipairs(v)do
-            Debug.Log(x.grid.gameObject.name);
-        end       
+--事件处理
+function GamingPanel.eventHandler(self,eventName,arg)
+    if(eventName == 'remainStepChange')then
+        self:onRemainStepChange(arg);
+    elseif(eventName == 'scoreChange')then
+        self:onScoreChange(arg);
+    elseif(eventName == 'nextDirChange')then
+        self:onNextDirChange(arg);
+    elseif(eventName == 'nextItemTypeChange')then
+        self:onNextItemChange(arg);
     end
 end
+
+function GamingPanel:onNextDirChange(newDir)
+    if(newDir == "up")then
+        self.dirRectTransform.localEulerAngles = Vector3(0,0,180);
+    elseif(newDir == "down")then
+        self.dirRectTransform.localEulerAngles = Vector3(0,0,0);
+    elseif(newDir == "left")then
+        self.dirRectTransform.localEulerAngles = Vector3(0,0,-90);
+    elseif(newDir == "right")then
+        self.dirRectTransform.localEulerAngles = Vector3(0,0,90);
+    end
+end
+
+function GamingPanel:onNextItemChange(newItemType)
+    local itemSprite = Resources.Load("icon" ..newItemType,Sprite);
+    self.nextIcon.sprite = itemSprite;
+end
+
+function GamingPanel:onRemainStepChange(newRemainStep)
+    self.remainStep.text = newRemainStep;
+end
+
+function GamingPanel:onScoreChange(newScore)
+    self.score.text = newScore;
+end
+
+
 
 return GamingPanel;

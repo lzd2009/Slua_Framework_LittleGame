@@ -1,0 +1,220 @@
+local Form = {}
+function Form:new(gridParent)
+    local o = {};
+    self.__index = self;
+    setmetatable(o,self);
+    --这个存放了当前关卡棋盘，是grid
+    o.lines = {};
+    o.gridParent = gridParent;
+    --有up，down，left，right四个方向对应的四个2维列表，用来临时存储新生成的东西。
+    self:initList();
+    o.globalManager = AssetManager.Require('globalmanager.txt');
+
+    --加事件监听
+    MessageCenter.AddListener('ClickGridSucceed',o);
+
+    return o;
+end
+
+--初始化上下左右4个列表
+function Form:initList()
+    self.upLists = {};
+    self.downLists = {};
+    for i = 0, 8,1 do
+        self.upLists[i] = {};
+        self.downLists[i] = {};
+    end
+
+    self.leftLists = {};
+    self.rightLists = {};
+    for i = 0, 6,1 do
+        self.leftLists[i] = {};
+        self.rightLists[i] = {};
+    end
+
+end
+
+
+
+--事件处理
+function Form.eventHandler(self,eventName,arg)
+    if(eventName == 'ClickGridSucceed')then
+        if(arg == 'up')then  
+            for i = 0 ,8,1 do
+                local count = self:ScanEmptyGridCount_byRawIndex(i);
+                
+                self:CreateNewItemList_UpDir(i,count);
+            end
+        elseif(arg == 'down')then
+            for i = 0 ,8,1 do
+                local count = self:ScanEmptyGridCount_byRawIndex(i);
+                self:CreateNewItemList_DownDir(i,count);
+            end
+        elseif(arg == 'left')then
+            for i = 0,6,1 do
+                local count = self:ScanEmptyGridCount_byLineIndex(i);
+                self:CreateNewItemList_LeftDir(i,count);
+            end
+        elseif(arg == 'right')then
+            for i = 0,6,1 do
+                local count = self:ScanEmptyGridCount_byLineIndex(i);
+                self:CreateNewItemList_RightDir(i,count);
+            end
+        end
+    end
+end
+
+
+
+--创建在屏幕外的item，设置父亲为gridParent，并返回
+function Form:createNewItem(itemType)
+    local itemAsset = AssetManager.LoadAsset('gaming_ui.ab','item');
+    local itemGo = GameObject.Instantiate(itemAsset);
+    itemGo.transform:SetParent(self.gridParent,false);
+    local itemImage = itemGo.transform:Find('icon'):GetComponent(UI.Image);
+    local itemAssetName = 'icon' .. itemType;
+    --sprite暂时用resources，框架忘记写sprite的ab包加载了
+    itemImage.sprite = Resources.Load(itemAssetName,Sprite);
+    --生成item这个类
+    local Item = AssetManager.Require('item.txt');
+    local item = Item:new(itemGo,itemType,5,self);
+    return item;
+end
+
+--扫描指定行，有多少空位
+function Form:ScanEmptyGridCount_byLineIndex(lineIndex)
+    local count = 0;
+    for k,v in ipairs(self.lines[lineIndex] )do
+        if(v.hasItem == false)then
+            count=count+1;
+        end
+    end
+    return count;
+end
+
+--扫描指定列，有多少空位
+function Form:ScanEmptyGridCount_byRawIndex(rawIndex)
+    local count = 0;
+    for k,v in ipairs(self.lines) do
+        for z,x in ipairs(v) do
+            if( (z == rawIndex) and (x.hasItem == false) )then
+                count = count + 1;
+            end
+        end
+    end
+    return count;
+end
+
+
+
+--共有4个方向，4个临时列表
+--下一个是上方向的情况，传入列号，以及这一列的空缺数量。将在对应列对应方向上，就是这一列下方，创建count数量的grid，放进upList管理
+function Form:CreateNewItemList_UpDir(index,count)
+    --1.根据方向和列号，查找这一列的开头的local坐标
+    local lineCount = self:CalculateTabCount(self.lines);
+    local createPoint = Vector3.zero;
+    for k,v in ipairs(self.lines)do
+        for z,x in ipairs(v)do
+            if(z == index)then
+                if(k == lineCount)then
+                    createPoint = ((self.lines[k])[z]).gameObject:GetComponent(RectTransform).localPosition;
+                end
+            end
+        end
+    end
+
+    for i=1,count,1 do
+    --暂时写成不随机的
+        local item = self:createNewItem(self.globalManager.playingData.nextType);
+        --createPoint变化
+        createPoint = createPoint + Vector3(0,-85,0);
+        --放到目标位置
+        item.gameObject:GetComponent(RectTransform).localPosition = createPoint;
+        --放到list中
+        (self.upLists[index])[i] = item;
+    end
+end
+
+--下一个是下方向的情况，传入列号，以及这一列的空缺数量。将在对应列对应方向上，就是这一列上方，创建count数量的grid，放进downList管理
+function Form:CreateNewItemList_DownDir(index,count)
+    --1.根据方向和列号，查找这一列的开头的local坐标
+    local createPoint = Vector3.zero;
+    for k,v in ipairs(self.lines)do
+        for z,x in ipairs(v)do
+            if(z == index)then
+                if(k == 0)then
+                    createPoint = ((self.lines[k])[z]).gameObject:GetComponent(RectTransform).localPosition;
+                end
+            end
+        end
+    end
+
+    for i=1,count,1 do
+    --暂时写成不随机的
+        local item = self:createNewItem(self.globalManager.playingData.nextType);
+        --createPoint变化
+        createPoint = createPoint + Vector3(0,85,0);
+        --放到目标位置
+        item.gameObject:GetComponent(RectTransform).localPosition = createPoint;
+        --放到list中
+        (self.downLists[index])[i] = item;
+    end
+end
+
+--下一个是左方向的情况，传入行号，以及这一行的空缺数量。将在对应行对应方向上，就是这一行右方，创建count数量的grid，放进leftList管理
+function Form:CreateNewItemList_LeftDir(index,count)
+    --1.根据方向和列号，查找这一行的开头的local坐标
+    local rawCount = self:CalculateTabCount(self.lines[0]);
+    local createPoint = Vector3.zero;
+    for k,v in ipairs(self.lines)do
+        if(k == index)then
+            createPoint = ((self.lines[k])[rawCount]).gameObject:GetComponent(RectTransform).localPosition;
+        end    
+    end
+
+    for i=1,count,1 do
+    --暂时写成不随机的
+        local item = self:createNewItem(self.globalManager.playingData.nextType);
+        --createPoint变化
+        createPoint = createPoint + Vector3(85,0,0);
+        --放到目标位置
+        item.gameObject:GetComponent(RectTransform).localPosition = createPoint;
+        --放到list中
+        (self.leftLists[index])[i] = item;
+    end
+end
+
+--下一个是右方向的情况，传入行号，以及这一行的空缺数量。将在对应行对应方向上，就是这一行左方，创建count数量的grid，放进rightList管理
+function Form:CreateNewItemList_RightDir(index,count)
+    --1.根据方向和列号，查找这一行的开头的local坐标
+    local createPoint = Vector3.zero;
+    for k,v in ipairs(self.lines)do
+        if(k == index)then
+            createPoint = ((self.lines[k])[0]).gameObject:GetComponent(RectTransform).localPosition;
+        end    
+    end
+
+    for i=1,count,1 do
+    --暂时写成不随机的
+        local item = self:createNewItem(self.globalManager.playingData.nextType);
+        --createPoint变化
+        createPoint = createPoint + Vector3(-85,0,0);
+        --放到目标位置
+        item.gameObject:GetComponent(RectTransform).localPosition = createPoint;
+        --放到list中
+        (self.rightLists[index])[i] = item;
+    end
+end
+
+
+function Form.CalculateTabCount(tab)
+    local length = 0;
+    for k,v in ipairs(tab)do
+        length = length + 1;
+    end
+    return length;  
+end
+
+
+
+return Form;

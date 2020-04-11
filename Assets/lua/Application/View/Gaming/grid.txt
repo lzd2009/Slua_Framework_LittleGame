@@ -1,18 +1,55 @@
 local Grid = {}
 
-function Grid:new(gameObject,gridData)
+function Grid:new(gameObject,lineIndex,rawIndex,gridParent)
     local o = {};
     self.__index = self;
     setmetatable(o,self);
     o.gameObject = gameObject;
-    o.gridData = gridData;
+    o.uponItem = nil;
+    o.hasItem = false;
+    o.lineIndex = lineIndex;
+    o.rawIndex = rawIndex;
+    o.gridParent = gridParent;
+    o.rectTransform = gameObject:GetComponent(RectTransform);
+    o.globalManager = AssetManager.Require('globalmanager.txt');
     --加监听
     o.el = EventListener.Get(o.gameObject);
     o.el.onClick = function()
-       Print("点击了grid,go 是：" .. o.gameObject.name);
+        if(o.globalManager.playingData.isInClickableState)then   
+            o:clear();
+            MessageCenter.SendEvent('ClickGridSucceed',o.globalManager.playingData.nextDir);
+        end
     end;
 
     return o;
+end
+
+--根据指定id在这个格子上生成对应物体
+function Grid:CreateItem(itemType)
+    local itemAsset = AssetManager.LoadAsset('gaming_ui.ab','item');
+    local itemGo = GameObject.Instantiate(itemAsset);
+    --设置位置
+    itemGo.transform:SetParent(self.gridParent,false);
+    itemGo:GetComponent(RectTransform).localPosition = self.rectTransform.localPosition;
+    local itemImage = itemGo.transform:Find('icon'):GetComponent(UI.Image);
+    local itemAssetName = 'icon' .. itemType;
+    
+    --sprite暂时用resources，框架忘记写sprite的ab包加载了
+    itemImage.sprite = Resources.Load(itemAssetName,Sprite);
+    --生成item这个类
+    local Item = AssetManager.Require('item.txt');
+    local item = Item:new(itemGo,itemType,5,self);
+    --设置数据
+    self.uponItem = item;
+    self.hasItem = true;
+end
+
+
+--清除这个格子上的东西
+function Grid:clear()
+    self.uponItem:clear();
+    self.uponItem = nil;
+    self.hasItem = false;
 end
 
 function Grid.start(self)

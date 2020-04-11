@@ -1,0 +1,60 @@
+local PlayingData = {}
+
+
+
+function PlayingData:new(remainStep)
+    local o = {};
+    self.__index = self;
+    setmetatable(o,self);
+    o.remainStep = remainStep;
+    o.score = 0;
+    o.nextDir = "down";
+    o.nextType = 1;
+    o.isInClickableState = true;
+    return o;
+end
+
+function PlayingData:setRemainStep(newRemainStep)
+    self.remainStep = newRemainStep;
+     MessageCenter.SendEvent('remainStepChange',newRemainStep);
+    if(self.remainStep <=0)then
+        Debug.Log("步数用完。");
+        MessageCenter.SendEvent('gameOver');
+    end
+end
+
+function PlayingData:setScore(newScore)
+    self.score = newScore;
+     MessageCenter.SendEvent('scoreChange',newScore);
+end
+
+function PlayingData:setNextDir(newDir)
+    self.nextDir = newDir;
+    MessageCenter.SendEvent('nextDirChange',newDir);
+end
+
+function PlayingData:setNextItemType(newItemType)
+    self.nextType = newItemType;
+    MessageCenter.SendEvent('nextItemTypeChange',newItemType);
+end
+
+function PlayingData:setNewScore(newScore)
+    self.score = newScore;
+    MessageCenter.SendEvent('scoreChange',newScore);
+end
+
+function PlayingData:randomDirAndItemType()
+    local randomItemType = UnityEngine.Random.Range(1,5);
+    self:setNextItemType(randomItemType);
+    local r = UnityEngine.Random.Range(0,4);
+    local randomDir = "none";
+    if(r ==0)then self.nextDir = "up"
+    elseif(r == 1)then randomDir = "down"
+    elseif(r == 2)then randomDir = "left"
+    elseif(r == 3)then randomDir = "right"
+    end
+    self:setNextDir(randomDir);
+end
+
+
+return PlayingData;

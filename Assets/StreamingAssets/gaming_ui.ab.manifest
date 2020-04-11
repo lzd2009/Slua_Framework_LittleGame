@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 634420714
+CRC: 2023891991
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 12a008b5c355598336daca1fd16c090e
+    Hash: c4ffe768488258b391bdae8fe84fba17
   TypeTreeHash:
     serializedVersion: 2
     Hash: d5c0c7b5d2969fdc9f455545d6493cb1
@@ -40,8 +40,14 @@ ClassTypes:
 - Class: 224
   Script: {instanceID: 0}
 Assets:
-- Assets/Art_Used/Prefabs/grid.prefab
+- Assets/Resources/icon1.png
+- Assets/Resources/icon2.png
+- Assets/Resources/icon5.png
+- Assets/Art_Used/Prefabs/item.prefab
+- Assets/Resources/icon3.png
+- Assets/Resources/icon4.png
 - Assets/Art_Used/Prefabs/GamingPanel.prefab
 - Assets/Art_Used/Prefabs/GameResultPanel.prefab
+- Assets/Art_Used/Prefabs/grid.prefab
 - Assets/Art_Used/Prefabs/line.prefab
 Dependencies: []

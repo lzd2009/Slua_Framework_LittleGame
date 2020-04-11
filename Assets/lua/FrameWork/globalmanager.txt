@@ -1,0 +1,6 @@
+local GlobalManager = {}
+
+--这张表没有new方法，是单例，是用来持有其他由全局访问需求的new出来的类的。
+
+return GlobalManager;
+
